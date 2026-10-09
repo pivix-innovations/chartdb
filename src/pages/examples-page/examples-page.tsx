@@ -1,10 +1,8 @@
 import React, { useCallback } from 'react';
-import ChartDBLogo from '@/assets/logo-light.png';
-import ChartDBDarkLogo from '@/assets/logo-dark.png';
+import { DesignDBWordmark } from '@/components/designdb-wordmark';
 import type { Example } from './examples-data/examples-data';
 import { examples } from './examples-data/examples-data';
 import { ExampleCard } from './example-card';
-import { useTheme } from '@/hooks/use-theme';
 import { LocalConfigProvider } from '@/context/local-config-context/local-config-provider';
 import { StorageProvider } from '@/context/storage-context/storage-provider';
 import { ThemeProvider } from '@/context/theme-context/theme-provider';
@@ -14,7 +12,6 @@ import { useStorage } from '@/hooks/use-storage';
 import type { Diagram } from '@/lib/domain/diagram';
 
 const ExamplesPageComponent: React.FC = () => {
-    const { effectiveTheme } = useTheme();
     const navigate = useNavigate();
     const { addDiagram, deleteDiagram } = useStorage();
     const [loadingExampleId, setLoadingExampleId] = React.useState<string>();
@@ -51,26 +48,18 @@ const ExamplesPageComponent: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>ChartDB - Example Database Diagrams & Schemas</title>
+                <title>DesignDB - Example Database Diagrams & Schemas</title>
             </Helmet>
             <section className="flex w-screen flex-col bg-background">
                 <nav className="flex h-12 flex-row items-center justify-between border-b px-4">
                     <div className="flex flex-1 justify-start gap-x-3">
                         <div className="flex items-center font-primary">
                             <a
-                                href="https://chartdb.io"
+                                href="https://github.com/pivix-innovations/designdb"
                                 className="cursor-pointer"
                                 rel="noreferrer"
                             >
-                                <img
-                                    src={
-                                        effectiveTheme === 'light'
-                                            ? ChartDBLogo
-                                            : ChartDBDarkLogo
-                                    }
-                                    alt="chartDB"
-                                    className="h-4 max-w-fit"
-                                />
+                                <DesignDBWordmark />
                             </a>
                         </div>
                     </div>
@@ -83,7 +72,7 @@ const ExamplesPageComponent: React.FC = () => {
                     </h1>
                     <h2 className="mt-1 font-primary text-base text-muted-foreground">
                         A collection of examples to help you get started with
-                        ChartDB.
+                        DesignDB.
                     </h2>
                     <h2 className="mt-1 text-base font-semibold">
                         Click on one 😀

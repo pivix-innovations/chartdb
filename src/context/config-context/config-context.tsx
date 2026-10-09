@@ -1,12 +1,12 @@
 import { createContext } from 'react';
 import { emptyFn } from '@/lib/utils';
-import type { ChartDBConfig } from '@/lib/domain/config';
+import type { DesignDBConfig } from '@/lib/domain/config';
 
 export interface ConfigContext {
-    config?: ChartDBConfig;
+    config?: DesignDBConfig;
     updateConfig: (params: {
-        config?: Partial<ChartDBConfig>;
-        updateFn?: (config: ChartDBConfig) => ChartDBConfig;
+        config?: Partial<DesignDBConfig>;
+        updateFn?: (config: DesignDBConfig) => DesignDBConfig;
     }) => Promise<void>;
 }
 

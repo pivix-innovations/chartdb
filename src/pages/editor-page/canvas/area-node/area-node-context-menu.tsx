@@ -6,7 +6,7 @@ import {
     ContextMenuTrigger,
 } from '@/components/context-menu/context-menu';
 import { useBreakpoint } from '@/hooks/use-breakpoint';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { useDesignDB } from '@/hooks/use-chartdb';
 import type { Area } from '@/lib/domain/area';
 import { arrangeTablesForArea } from '@/lib/utils/area-utils';
 import { LayoutGrid, Pencil, Trash2 } from 'lucide-react';
@@ -28,7 +28,7 @@ export const AreaNodeContextMenu: React.FC<
         relationships,
         updateTablesState,
         updateArea,
-    } = useChartDB();
+    } = useDesignDB();
     const { isMd: isDesktop } = useBreakpoint('md');
     const { getNodes } = useReactFlow();
 

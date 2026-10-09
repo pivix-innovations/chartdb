@@ -3,11 +3,9 @@ import type { ExportImageContext, ImageType } from './export-image-context';
 import { exportImageContext } from './export-image-context';
 import { toJpeg, toPng, toSvg } from 'html-to-image';
 import { useReactFlow } from '@xyflow/react';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { useDesignDB } from '@/hooks/use-chartdb';
 import { useFullScreenLoader } from '@/hooks/use-full-screen-spinner';
 import { useTheme } from '@/hooks/use-theme';
-import logoDark from '@/assets/logo-dark.png';
-import logoLight from '@/assets/logo-light.png';
 import type { EffectiveTheme } from '../theme-context/theme-context';
 
 export const ExportImageProvider: React.FC<React.PropsWithChildren> = ({
@@ -16,13 +14,13 @@ export const ExportImageProvider: React.FC<React.PropsWithChildren> = ({
     const { hideLoader, showLoader } = useFullScreenLoader();
     const { setNodes, getViewport } = useReactFlow();
     const { effectiveTheme } = useTheme();
-    const { diagramName } = useChartDB();
+    const { diagramName } = useDesignDB();
     const [logoBase64, setLogoBase64] = useState<string>('');
 
     useEffect(() => {
         // Convert logo to base64 on component mount
         const img = new Image();
-        img.src = effectiveTheme === 'light' ? logoLight : logoDark;
+        img.src = '/designdb-logo.png';
         img.onload = () => {
             const canvas = document.createElement('canvas');
             canvas.width = img.width;

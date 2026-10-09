@@ -618,8 +618,8 @@ export const typeAffinity: Record<string, Record<string, string>> = {
 // CockroachDB uses PostgreSQL-compatible types - reference dynamically
 typeAffinity[DatabaseType.COCKROACHDB] = typeAffinity[DatabaseType.POSTGRESQL];
 
-// Convert SQLParserResult to ChartDB Diagram structure
-export function convertToChartDBDiagram(
+// Convert SQLParserResult to DesignDB Diagram structure
+export function convertToDesignDBDiagram(
     parserResult: SQLParserResult,
     sourceDatabaseType: DatabaseType,
     targetDatabaseType: DatabaseType
@@ -627,7 +627,7 @@ export function convertToChartDBDiagram(
     // Create a mapping of old table IDs to new ones
     const tableIdMapping = new Map<string, string>();
 
-    // Convert SQL tables to ChartDB tables
+    // Convert SQL tables to DesignDB tables
     const tables: DBTable[] = parserResult.tables.map((table, index) => {
         const row = Math.floor(index / 4);
         const col = index % 4;
@@ -741,6 +741,9 @@ export function convertToChartDBDiagram(
                     targetDatabaseType === DatabaseType.COCKROACHDB)
             ) {
                 const normalizedType = columnForMapping.type.toLowerCase();
+                const geographyType = normalizedType.match(
+                    /^geography(?:\s*\((.*)\))?$/i
+                );
 
                 // Preserve PostgreSQL-specific types that don't exist in genericDataTypes
                 // Serial types are PostgreSQL-specific syntax (not true data types)
@@ -750,9 +753,15 @@ export function convertToChartDBDiagram(
                     normalizedType === 'bigserial' ||
                     normalizedType === 'jsonb' ||
                     normalizedType === 'timestamptz' ||
-                    normalizedType === 'timetz'
+                    normalizedType === 'timetz' ||
+                    (geographyType &&
+                        targetDatabaseType === DatabaseType.POSTGRESQL)
                 ) {
-                    mappedType = { id: normalizedType, name: normalizedType };
+                    mappedType =
+                        geographyType &&
+                        targetDatabaseType === DatabaseType.POSTGRESQL
+                            ? { id: 'geography', name: 'geography' }
+                            : { id: normalizedType, name: normalizedType };
                 } else {
                     // Use the standard mapping for other types
                     mappedType = mapSQLTypeToGenericType(
@@ -823,6 +832,13 @@ export function convertToChartDBDiagram(
                 increment: column.increment,
                 isArray: isArrayType || undefined,
             };
+
+            if (field.type.id === 'geography') {
+                const modifier = columnForMapping.type.match(
+                    /^geography\s*\((.*)\)$/i
+                )?.[1];
+                field.spatialTypeModifier = modifier?.trim() || undefined;
+            }
 
             // Add type arguments if present
             if (column.typeArgs) {
@@ -1043,7 +1059,7 @@ export function convertToChartDBDiagram(
         });
     });
 
-    // Convert SQL enum types to ChartDB custom types
+    // Convert SQL enum types to DesignDB custom types
     const customTypes: DBCustomType[] = [];
 
     if (parserResult.enums) {

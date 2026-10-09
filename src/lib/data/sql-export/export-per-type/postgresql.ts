@@ -178,6 +178,13 @@ export function exportPostgreSQL({
     // Create CREATE SCHEMA statements for all schemas
     let sqlScript = '';
     if (!onlyRelationships) {
+        const usesGeography = tables.some((table) =>
+            table.fields.some((field) => field.type.id === 'geography')
+        );
+        if (usesGeography) {
+            sqlScript += 'CREATE EXTENSION IF NOT EXISTS postgis;\n\n';
+        }
+
         const schemas = new Set<string>();
 
         tables.forEach((table) => {
@@ -260,6 +267,13 @@ export function exportPostgreSQL({
                         // Handle PostgreSQL specific type formatting
                         let typeWithSize = typeName;
                         let serialType = null;
+
+                        if (
+                            field.type.id === 'geography' &&
+                            field.spatialTypeModifier?.trim()
+                        ) {
+                            typeWithSize = `${typeName}(${field.spatialTypeModifier.trim()})`;
+                        }
 
                         if (field.increment && !field.nullable) {
                             if (

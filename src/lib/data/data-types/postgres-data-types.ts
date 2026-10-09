@@ -102,6 +102,7 @@ export const postgresDataTypes: readonly DataTypeData[] = [
     { name: 'path', id: 'path' },
     { name: 'polygon', id: 'polygon' },
     { name: 'circle', id: 'circle' },
+    { name: 'geography', id: 'geography', usageLevel: 2 },
     { name: 'cidr', id: 'cidr' },
     { name: 'inet', id: 'inet' },
     { name: 'macaddr', id: 'macaddr' },

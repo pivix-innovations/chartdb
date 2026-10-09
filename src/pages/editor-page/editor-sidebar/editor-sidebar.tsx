@@ -23,10 +23,8 @@ import { useLayout } from '@/hooks/use-layout';
 import { useTranslation } from 'react-i18next';
 import { DiscordLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import { useBreakpoint } from '@/hooks/use-breakpoint';
-import ChartDBLogo from '@/assets/logo-light.png';
-import ChartDBDarkLogo from '@/assets/logo-dark.png';
-import { useTheme } from '@/hooks/use-theme';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { DesignDBWordmark } from '@/components/designdb-wordmark';
+import { useDesignDB } from '@/hooks/use-chartdb';
 import { supportsCustomTypes } from '@/lib/domain/database-capabilities';
 import { useDialog } from '@/hooks/use-dialog';
 import { Separator } from '@/components/separator/separator';
@@ -50,8 +48,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
     } = useLayout();
     const { t } = useTranslation();
     const { isMd: isDesktop } = useBreakpoint('md');
-    const { effectiveTheme } = useTheme();
-    const { databaseType } = useChartDB();
+    const { databaseType } = useDesignDB();
     const { openCreateDiagramDialog, openOpenDiagramDialog } = useDialog();
 
     const diagramItems: SidebarItem[] = useMemo(
@@ -161,7 +158,11 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
             {
                 title: 'Docs',
                 icon: BookOpen,
-                onClick: () => window.open('https://docs.chartdb.io', '_blank'),
+                onClick: () =>
+                    window.open(
+                        'https://github.com/pivix-innovations/designdb',
+                        '_blank'
+                    ),
                 active: false,
             },
         ],
@@ -178,19 +179,11 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = () => {
             {!isDesktop ? (
                 <SidebarHeader>
                     <a
-                        href="https://chartdb.io"
+                        href="https://github.com/pivix-innovations/designdb"
                         className="cursor-pointer"
                         rel="noreferrer"
                     >
-                        <img
-                            src={
-                                effectiveTheme === 'light'
-                                    ? ChartDBLogo
-                                    : ChartDBDarkLogo
-                            }
-                            alt="chartDB"
-                            className="h-4 max-w-fit"
-                        />
+                        <DesignDBWordmark />
                     </a>
                 </SidebarHeader>
             ) : null}

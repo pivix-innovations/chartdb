@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import ChartDBLogo from '@/assets/logo-2.png';
+import { DesignDBWordmark } from '@/components/designdb-wordmark';
 import { DiagramName } from './diagram-name';
 import { LanguageNav } from './language-nav/language-nav';
 import { Menu } from './menu/menu';
@@ -12,12 +12,14 @@ export interface TopNavbarMobileProps {}
 export const TopNavbarMobile: React.FC<TopNavbarMobileProps> = () => {
     const renderStars = useCallback(() => {
         return (
-            <iframe
-                src="https://ghbtns.com/github-btn.html?user=chartdb&repo=chartdb&type=star&size=small&text=false"
-                width="25"
-                height="20"
-                title="GitHub"
-            ></iframe>
+            <a
+                href="https://github.com/pivix-innovations/designdb"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs hover:underline"
+            >
+                Source
+            </a>
         );
     }, []);
 
@@ -26,7 +28,7 @@ export const TopNavbarMobile: React.FC<TopNavbarMobileProps> = () => {
     return (
         <nav className="flex flex-col justify-between border-b px-3 md:h-12 md:flex-row md:items-center md:px-4">
             <div className="flex flex-1 flex-col justify-between gap-x-1 md:flex-row md:justify-normal">
-                <div className="flex items-center justify-between pt-[8px] font-primary md:py-[10px]">
+                <div className="flex items-center justify-between pt-[4px] font-primary md:py-[4px]">
                     <div className="flex items-center gap-2">
                         <Button
                             size={'icon'}
@@ -36,15 +38,11 @@ export const TopNavbarMobile: React.FC<TopNavbarMobileProps> = () => {
                             <MenuIcon className="size-5" />
                         </Button>
                         <a
-                            href="https://chartdb.io"
+                            href="https://github.com/pivix-innovations/designdb"
                             className="cursor-pointer"
                             rel="noreferrer"
                         >
-                            <img
-                                src={ChartDBLogo}
-                                alt="chartDB"
-                                className="h-4 max-w-fit"
-                            />
+                            <DesignDBWordmark />
                         </a>
                     </div>
 

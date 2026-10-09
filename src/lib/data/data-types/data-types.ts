@@ -50,7 +50,9 @@ export const dataTypeMap: Record<DatabaseType, readonly DataTypeData[]> = {
     [DatabaseType.MARIADB]: mariadbDataTypes,
     [DatabaseType.SQLITE]: sqliteDataTypes,
     [DatabaseType.CLICKHOUSE]: clickhouseDataTypes,
-    [DatabaseType.COCKROACHDB]: postgresDataTypes,
+    [DatabaseType.COCKROACHDB]: postgresDataTypes.filter(
+        (type) => type.id !== 'geography'
+    ),
     [DatabaseType.ORACLE]: oracleDataTypes,
 } as const;
 

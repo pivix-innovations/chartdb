@@ -25,3 +25,5 @@ dist-ssr
 
 .env
 stats/
+# Local Netlify folder
+.netlify

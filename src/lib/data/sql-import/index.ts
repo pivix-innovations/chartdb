@@ -7,7 +7,7 @@ import { fromSQLServer } from './dialect-importers/sqlserver/sqlserver';
 import { fromSQLite } from './dialect-importers/sqlite/sqlite';
 import { fromOracle, isOracleFormat } from './dialect-importers/oracle/oracle';
 import type { SQLParserResult } from './common';
-import { convertToChartDBDiagram } from './common';
+import { convertToDesignDBDiagram } from './common';
 import { adjustTablePositions } from '@/lib/domain/db-table';
 import { fromMySQL, isMySQLFormat } from './dialect-importers/mysql/mysql';
 import { getTableIndexesWithPrimaryKey } from '@/lib/domain/db-index';
@@ -226,7 +226,7 @@ export async function sqlImportToDiagram({
     }
 
     // Convert the parsed SQL to a diagram
-    const diagram = convertToChartDBDiagram(
+    const diagram = convertToDesignDBDiagram(
         parserResult,
         sourceDatabaseType,
         targetDatabaseType

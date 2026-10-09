@@ -480,10 +480,12 @@ function extractColumnsFromSQL(sql: string): SQLColumn[] {
             if (!typeMatch) continue;
             let columnType = typeMatch[1].trim();
 
-            // Normalize PostGIS types
-            if (columnType.toUpperCase().startsWith('GEOGRAPHY')) {
-                columnType = 'GEOGRAPHY';
-            } else if (columnType.toUpperCase().startsWith('GEOMETRY')) {
+            // Keep geography typmods intact so the shape and SRID survive import.
+            const isGeographyType = /^GEOGRAPHY\b/i.test(columnType);
+            if (
+                !isGeographyType &&
+                columnType.toUpperCase().startsWith('GEOMETRY')
+            ) {
                 columnType = 'GEOMETRY';
             }
 
@@ -491,7 +493,9 @@ function extractColumnsFromSQL(sql: string): SQLColumn[] {
             const isSerialType = isSerialTypeName(columnType);
 
             // Normalize the type (preserves serial types)
-            columnType = normalizePostgreSQLType(columnType);
+            if (!isGeographyType) {
+                columnType = normalizePostgreSQLType(columnType);
+            }
 
             // Check for common constraints
             const isPrimary = trimmedLine.match(/PRIMARY\s+KEY/i) !== null;
@@ -1109,6 +1113,25 @@ export async function fromPostgres(
                                 rawDataType,
                                 typeLength
                             );
+
+                            if (
+                                finalDataType.toLowerCase() === 'geography' &&
+                                columnName
+                            ) {
+                                const escapedColumnName = columnName.replace(
+                                    /[.*+?^${}()|[\]\\]/g,
+                                    '\\$&'
+                                );
+                                const geographyModifier = stmt.sql.match(
+                                    new RegExp(
+                                        `(?:^|[,(\\n])\\s*(?:"${escapedColumnName}"|${escapedColumnName})\\s+geography\\s*\\(([^()]*)\\)`,
+                                        'i'
+                                    )
+                                )?.[1];
+                                if (geographyModifier) {
+                                    finalDataType = `geography(${geographyModifier.trim()})`;
+                                }
+                            }
 
                             // Add type parameters for non-serial, non-integer types
                             if (!isSerialType) {

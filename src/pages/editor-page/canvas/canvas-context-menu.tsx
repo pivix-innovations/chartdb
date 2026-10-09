@@ -9,7 +9,7 @@ import {
     ContextMenuTrigger,
 } from '@/components/context-menu/context-menu';
 import { useBreakpoint } from '@/hooks/use-breakpoint';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { useDesignDB } from '@/hooks/use-chartdb';
 import { useDialog } from '@/hooks/use-dialog';
 import { useReactFlow, useStore } from '@xyflow/react';
 import React, { useCallback } from 'react';
@@ -46,7 +46,7 @@ export const CanvasContextMenu: React.FC<React.PropsWithChildren> = ({
         relationships,
         updateArea,
         updateTablesState,
-    } = useChartDB();
+    } = useDesignDB();
     const { schemasDisplayed } = useDiagramFilter();
     const { openCreateRelationshipDialog, openImportDatabaseDialog } =
         useDialog();

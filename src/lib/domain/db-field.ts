@@ -24,6 +24,7 @@ export interface DBField {
     collation?: string | null;
     comments?: string | null;
     check?: string | null;
+    spatialTypeModifier?: string | null;
 }
 
 export const dbFieldSchema: z.ZodType<DBField> = z.object({
@@ -43,6 +44,7 @@ export const dbFieldSchema: z.ZodType<DBField> = z.object({
     collation: z.string().or(z.null()).optional(),
     comments: z.string().or(z.null()).optional(),
     check: z.string().or(z.null()).optional(),
+    spatialTypeModifier: z.string().or(z.null()).optional(),
 });
 
 export const generateDBFieldSuffix = (
@@ -84,6 +86,10 @@ const generateExtendedSuffix = (
     databaseType: DatabaseType,
     typeId: string
 ): string => {
+    if (typeId === 'geography' && field.spatialTypeModifier?.trim()) {
+        return `(${field.spatialTypeModifier.trim()})`;
+    }
+
     const type = findDataTypeDataById(typeId, databaseType);
 
     if (!type?.fieldAttributes) {
@@ -113,6 +119,10 @@ const generateExtendedSuffix = (
 };
 
 const generateStandardSuffix = (field: DBField): string => {
+    if (field.type.id === 'geography' && field.spatialTypeModifier?.trim()) {
+        return `(${field.spatialTypeModifier.trim()})`;
+    }
+
     // Character maximum length
     if (field.characterMaximumLength) {
         return `(${field.characterMaximumLength})`;

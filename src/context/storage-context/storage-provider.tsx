@@ -6,18 +6,25 @@ import type { Diagram } from '@/lib/domain/diagram';
 import type { DBTable } from '@/lib/domain/db-table';
 import type { DBRelationship } from '@/lib/domain/db-relationship';
 import { determineCardinalities } from '@/lib/domain/db-relationship';
-import type { ChartDBConfig } from '@/lib/domain/config';
+import type { DesignDBConfig } from '@/lib/domain/config';
 import type { DBDependency } from '@/lib/domain/db-dependency';
 import type { Area } from '@/lib/domain/area';
 import type { DBCustomType } from '@/lib/domain/db-custom-type';
 import type { DiagramFilter } from '@/lib/domain/diagram-filter/diagram-filter';
 import type { Note } from '@/lib/domain/note';
+import {
+    deleteCloudDiagram,
+    getCloudDiagram,
+    listCloudDiagrams,
+    saveCloudDiagram,
+} from '@/lib/cloud-diagrams';
+import { supabase } from '@/lib/supabase';
 
 export const StorageProvider: React.FC<React.PropsWithChildren> = ({
     children,
 }) => {
     const db = useMemo(() => {
-        const dexieDB = new Dexie('ChartDB') as Dexie & {
+        const dexieDB = new Dexie('DesignDB') as Dexie & {
             diagrams: EntityTable<
                 Diagram,
                 'id' // primary key "id" (for the typings only)
@@ -47,7 +54,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 'id' // primary key "id" (for the typings only)
             >;
             config: EntityTable<
-                ChartDBConfig & { id: number },
+                DesignDBConfig & { id: number },
                 'id' // primary key "id" (for the typings only)
             >;
             diagram_filters: EntityTable<
@@ -254,8 +261,18 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
     }, []);
 
     const getConfig: StorageContext['getConfig'] =
-        useCallback(async (): Promise<ChartDBConfig | undefined> => {
-            return await db.config.get(1);
+        useCallback(async (): Promise<DesignDBConfig | undefined> => {
+            const config = await db.config.get(1);
+            if (!supabase) return config;
+            const diagrams = await listCloudDiagrams();
+            return {
+                ...(config ?? { id: 1 }),
+                defaultDiagramId: diagrams.some(
+                    (item) => item.id === config?.defaultDiagramId
+                )
+                    ? config!.defaultDiagramId
+                    : (diagrams[0]?.id ?? ''),
+            };
         }, [db]);
 
     const updateConfig: StorageContext['updateConfig'] = useCallback(
@@ -675,6 +692,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
             );
 
             await Promise.all(promises);
+            if (supabase) await saveCloudDiagram(diagram);
         },
         [
             db,
@@ -698,9 +716,11 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 includeNotes: false,
             }
         ): Promise<Diagram[]> => {
-            let diagrams = await db.diagrams.toArray();
+            let diagrams = supabase
+                ? await listCloudDiagrams()
+                : await db.diagrams.toArray();
 
-            if (options.includeTables) {
+            if (options.includeTables && !supabase) {
                 diagrams = await Promise.all(
                     diagrams.map(async (diagram) => {
                         diagram.tables = await listTables(diagram.id);
@@ -709,7 +729,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 );
             }
 
-            if (options.includeRelationships) {
+            if (options.includeRelationships && !supabase) {
                 diagrams = await Promise.all(
                     diagrams.map(async (diagram) => {
                         diagram.relationships = await listRelationships(
@@ -720,7 +740,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 );
             }
 
-            if (options.includeDependencies) {
+            if (options.includeDependencies && !supabase) {
                 diagrams = await Promise.all(
                     diagrams.map(async (diagram) => {
                         diagram.dependencies = await listDependencies(
@@ -731,7 +751,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 );
             }
 
-            if (options.includeAreas) {
+            if (options.includeAreas && !supabase) {
                 diagrams = await Promise.all(
                     diagrams.map(async (diagram) => {
                         diagram.areas = await listAreas(diagram.id);
@@ -740,7 +760,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 );
             }
 
-            if (options.includeCustomTypes) {
+            if (options.includeCustomTypes && !supabase) {
                 diagrams = await Promise.all(
                     diagrams.map(async (diagram) => {
                         diagram.customTypes = await listCustomTypes(diagram.id);
@@ -749,7 +769,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 );
             }
 
-            if (options.includeNotes) {
+            if (options.includeNotes && !supabase) {
                 diagrams = await Promise.all(
                     diagrams.map(async (diagram) => {
                         diagram.notes = await listNotes(diagram.id);
@@ -783,33 +803,35 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 includeNotes: false,
             }
         ): Promise<Diagram | undefined> => {
-            const diagram = await db.diagrams.get(id);
+            const diagram = supabase
+                ? await getCloudDiagram(id)
+                : await db.diagrams.get(id);
 
             if (!diagram) {
                 return undefined;
             }
 
-            if (options.includeTables) {
+            if (options.includeTables && !supabase) {
                 diagram.tables = await listTables(id);
             }
 
-            if (options.includeRelationships) {
+            if (options.includeRelationships && !supabase) {
                 diagram.relationships = await listRelationships(id);
             }
 
-            if (options.includeDependencies) {
+            if (options.includeDependencies && !supabase) {
                 diagram.dependencies = await listDependencies(id);
             }
 
-            if (options.includeAreas) {
+            if (options.includeAreas && !supabase) {
                 diagram.areas = await listAreas(id);
             }
 
-            if (options.includeCustomTypes) {
+            if (options.includeCustomTypes && !supabase) {
                 diagram.customTypes = await listCustomTypes(id);
             }
 
-            if (options.includeNotes) {
+            if (options.includeNotes && !supabase) {
                 diagram.notes = await listNotes(id);
             }
 
@@ -829,6 +851,11 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
     const updateDiagram: StorageContext['updateDiagram'] = useCallback(
         async ({ id, attributes }) => {
             await db.diagrams.update(id, attributes);
+            if (supabase && attributes.id) {
+                const diagram = await getCloudDiagram(id);
+                if (diagram)
+                    await saveCloudDiagram({ ...diagram, ...attributes });
+            }
 
             if (attributes.id) {
                 await Promise.all([
@@ -862,6 +889,7 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
 
     const deleteDiagram: StorageContext['deleteDiagram'] = useCallback(
         async (id) => {
+            if (supabase) await deleteCloudDiagram(id);
             await Promise.all([
                 db.diagrams.delete(id),
                 db.db_tables.where('diagramId').equals(id).delete(),

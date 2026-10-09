@@ -480,7 +480,7 @@ export const id_ID: LanguageTranslation = {
             error: {
                 title: 'Error ekspor diagram',
                 description:
-                    'Sesuatu yang salah. Butuh bantuan? support@chartdb.io',
+                    'Sesuatu yang salah. Butuh bantuan? https://github.com/pivix-innovations/designdb/issues',
             },
         },
 
@@ -492,7 +492,7 @@ export const id_ID: LanguageTranslation = {
             error: {
                 title: 'Error impor diagram',
                 description:
-                    'Diagram JSON tidak valid. Silakan cek JSON dan coba lagi. Butuh bantuan? support@chartdb.io',
+                    'Diagram JSON tidak valid. Silakan cek JSON dan coba lagi. Butuh bantuan? https://github.com/pivix-innovations/designdb/issues',
             },
         },
         // TODO: Translate

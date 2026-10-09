@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { useRef } from 'react';
+import { useDesignDB } from '@/hooks/use-chartdb';
 import { useDialog } from '@/hooks/use-dialog';
 import { Toaster } from '@/components/toast/toaster';
 import { useBreakpoint } from '@/hooks/use-breakpoint';
@@ -10,7 +11,7 @@ import { LocalConfigProvider } from '@/context/local-config-context/local-config
 import { StorageProvider } from '@/context/storage-context/storage-provider';
 import { ConfigProvider } from '@/context/config-context/config-provider';
 import { RedoUndoStackProvider } from '@/context/history-context/redo-undo-stack-provider';
-import { ChartDBProvider } from '@/context/chartdb-context/chartdb-provider';
+import { DesignDBProvider } from '@/context/chartdb-context/chartdb-provider';
 import { HistoryProvider } from '@/context/history-context/history-provider';
 import { ThemeProvider } from '@/context/theme-context/theme-provider';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -21,11 +22,14 @@ import { Spinner } from '@/components/spinner/spinner';
 import { Helmet } from 'react-helmet-async';
 import { AlertProvider } from '@/context/alert-context/alert-provider';
 import { CanvasProvider } from '@/context/canvas-context/canvas-provider';
-import { HIDE_CHARTDB_CLOUD } from '@/lib/env';
+import { HIDE_DESIGNDB_CLOUD } from '@/lib/env';
 import { useDiagramLoader } from './use-diagram-loader';
 import { DiffProvider } from '@/context/diff-context/diff-provider';
 import { TopNavbarMock } from './top-navbar/top-navbar-mock';
 import { DiagramFilterProvider } from '@/context/diagram-filter-context/diagram-filter-provider';
+import { CloudAuthGate } from './cloud-auth-gate';
+import { saveCloudDiagram } from '@/lib/cloud-diagrams';
+import { useToast } from '@/components/toast/use-toast';
 
 const OPEN_STAR_US_AFTER_SECONDS = 30;
 const SHOW_STAR_US_AGAIN_AFTER_DAYS = 1;
@@ -39,15 +43,40 @@ export const EditorMobileLayoutLazy = React.lazy(
 );
 
 const EditorPageComponent: React.FC = () => {
-    const { diagramName, currentDiagram } = useChartDB();
+    const { diagramName, currentDiagram } = useDesignDB();
     const { openStarUsDialog } = useDialog();
     const { isMd: isDesktop } = useBreakpoint('md');
     const { starUsDialogLastOpen, setStarUsDialogLastOpen, githubRepoOpened } =
         useLocalConfig();
     const { initialDiagram } = useDiagramLoader();
+    const { toast } = useToast();
+    const savedSnapshot = useRef('');
 
     useEffect(() => {
-        if (HIDE_CHARTDB_CLOUD) {
+        if (!currentDiagram.id) return;
+        const snapshot = JSON.stringify(currentDiagram);
+        if (snapshot === savedSnapshot.current) return;
+        const timer = window.setTimeout(() => {
+            void saveCloudDiagram(currentDiagram)
+                .then(() => {
+                    savedSnapshot.current = snapshot;
+                })
+                .catch((error: unknown) => {
+                    toast({
+                        title: 'Could not save diagram to the server',
+                        description:
+                            error instanceof Error
+                                ? error.message
+                                : 'Check your connection and try again.',
+                        variant: 'destructive',
+                    });
+                });
+        }, 700);
+        return () => window.clearTimeout(timer);
+    }, [currentDiagram, toast]);
+
+    useEffect(() => {
+        if (HIDE_DESIGNDB_CLOUD) {
             return;
         }
 
@@ -76,8 +105,8 @@ const EditorPageComponent: React.FC = () => {
             <Helmet>
                 <title>
                     {diagramName
-                        ? `ChartDB - ${diagramName} Diagram | Visualize Database Schemas`
-                        : 'ChartDB - Create & Visualize Database Schema Diagrams'}
+                        ? `DesignDB - ${diagramName} Diagram | Visualize Database Schemas`
+                        : 'DesignDB - Create & Visualize Database Schema Diagrams'}
                 </title>
             </Helmet>
             <section
@@ -112,39 +141,41 @@ const EditorPageComponent: React.FC = () => {
 };
 
 export const EditorPage: React.FC = () => (
-    <LocalConfigProvider>
-        <ThemeProvider>
-            <FullScreenLoaderProvider>
-                <LayoutProvider>
-                    <StorageProvider>
-                        <ConfigProvider>
-                            <RedoUndoStackProvider>
-                                <DiffProvider>
-                                    <ChartDBProvider>
-                                        <DiagramFilterProvider>
-                                            <HistoryProvider>
-                                                <ReactFlowProvider>
-                                                    <CanvasProvider>
-                                                        <ExportImageProvider>
-                                                            <AlertProvider>
-                                                                <DialogProvider>
-                                                                    <KeyboardShortcutsProvider>
-                                                                        <EditorPageComponent />
-                                                                    </KeyboardShortcutsProvider>
-                                                                </DialogProvider>
-                                                            </AlertProvider>
-                                                        </ExportImageProvider>
-                                                    </CanvasProvider>
-                                                </ReactFlowProvider>
-                                            </HistoryProvider>
-                                        </DiagramFilterProvider>
-                                    </ChartDBProvider>
-                                </DiffProvider>
-                            </RedoUndoStackProvider>
-                        </ConfigProvider>
-                    </StorageProvider>
-                </LayoutProvider>
-            </FullScreenLoaderProvider>
-        </ThemeProvider>
-    </LocalConfigProvider>
+    <CloudAuthGate>
+        <LocalConfigProvider>
+            <ThemeProvider>
+                <FullScreenLoaderProvider>
+                    <LayoutProvider>
+                        <StorageProvider>
+                            <ConfigProvider>
+                                <RedoUndoStackProvider>
+                                    <DiffProvider>
+                                        <DesignDBProvider>
+                                            <DiagramFilterProvider>
+                                                <HistoryProvider>
+                                                    <ReactFlowProvider>
+                                                        <CanvasProvider>
+                                                            <ExportImageProvider>
+                                                                <AlertProvider>
+                                                                    <DialogProvider>
+                                                                        <KeyboardShortcutsProvider>
+                                                                            <EditorPageComponent />
+                                                                        </KeyboardShortcutsProvider>
+                                                                    </DialogProvider>
+                                                                </AlertProvider>
+                                                            </ExportImageProvider>
+                                                        </CanvasProvider>
+                                                    </ReactFlowProvider>
+                                                </HistoryProvider>
+                                            </DiagramFilterProvider>
+                                        </DesignDBProvider>
+                                    </DiffProvider>
+                                </RedoUndoStackProvider>
+                            </ConfigProvider>
+                        </StorageProvider>
+                    </LayoutProvider>
+                </FullScreenLoaderProvider>
+            </ThemeProvider>
+        </LocalConfigProvider>
+    </CloudAuthGate>
 );

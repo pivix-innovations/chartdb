@@ -12,7 +12,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/tooltip/tooltip';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { useDesignDB } from '@/hooks/use-chartdb';
 import type {
     DBRelationship,
     RelationshipType,
@@ -42,7 +42,7 @@ export const RelationshipListItemContent: React.FC<
         updateRelationship,
         removeRelationship,
         readonly,
-    } = useChartDB();
+    } = useDesignDB();
     const { deleteElements } = useReactFlow();
     const { t } = useTranslation();
     const relationshipType = useMemo(

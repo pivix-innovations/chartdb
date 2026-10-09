@@ -8,7 +8,7 @@ export interface TemplatesPageHelmetProps {
     isFeatured: boolean;
 }
 
-const CHARTDB_HOST_URL = 'https://chartdb.io';
+const DESIGNDB_HOST_URL = HOST_URL;
 export const TemplatesPageHelmet: React.FC<TemplatesPageHelmetProps> = ({
     tag,
     isFeatured,
@@ -28,11 +28,11 @@ export const TemplatesPageHelmet: React.FC<TemplatesPageHelmetProps> = ({
             suffix += '/featured';
         }
 
-        return `${CHARTDB_HOST_URL}${suffix}`;
+        return `${DESIGNDB_HOST_URL}${suffix}`;
     }, [isFeatured, formattedUrlTag]);
 
     const needCanonical =
-        HOST_URL !== CHARTDB_HOST_URL || (tag && formattedUrlTag !== tagParam);
+        HOST_URL !== DESIGNDB_HOST_URL || (tag && formattedUrlTag !== tagParam);
 
     return (
         <Helmet>
@@ -41,13 +41,13 @@ export const TemplatesPageHelmet: React.FC<TemplatesPageHelmetProps> = ({
             ) : null}
 
             {tag ? (
-                <title>{`${tag} database schema diagram templates | ChartDB`}</title>
+                <title>{`${tag} database schema diagram templates | DesignDB`}</title>
             ) : isFeatured ? (
                 <title>
-                    Featured database schema diagram templates | ChartDB
+                    Featured database schema diagram templates | DesignDB
                 </title>
             ) : (
-                <title>Database schema diagram templates | ChartDB</title>
+                <title>Database schema diagram templates | DesignDB</title>
             )}
 
             {tag ? (
@@ -65,17 +65,17 @@ export const TemplatesPageHelmet: React.FC<TemplatesPageHelmetProps> = ({
             {tag ? (
                 <meta
                     property="og:title"
-                    content={`${tag} database schema diagram templates | ChartDB`}
+                    content={`${tag} database schema diagram templates | DesignDB`}
                 />
             ) : isFeatured ? (
                 <meta
                     property="og:title"
-                    content="Featured database schema diagram templates | ChartDB"
+                    content="Featured database schema diagram templates | DesignDB"
                 />
             ) : (
                 <meta
                     property="og:title"
-                    content="Database schema diagram templates | ChartDB"
+                    content="Database schema diagram templates | DesignDB"
                 />
             )}
 
@@ -104,19 +104,22 @@ export const TemplatesPageHelmet: React.FC<TemplatesPageHelmetProps> = ({
                     content="Discover a collection of real-world database schema diagrams, featuring example applications and popular open-source projects."
                 />
             )}
-            <meta property="og:image" content={`${HOST_URL}/chartdb.png`} />
+            <meta
+                property="og:image"
+                content={`${HOST_URL}/designdb-logo.png`}
+            />
             <meta property="og:type" content="website" />
-            <meta property="og:site_name" content="ChartDB" />
+            <meta property="og:site_name" content="DesignDB" />
 
             {tag ? (
                 <meta
                     name="twitter:title"
-                    content={`${tag} database schema diagram templates | ChartDB`}
+                    content={`${tag} database schema diagram templates | DesignDB`}
                 />
             ) : (
                 <meta
                     name="twitter:title"
-                    content="Database schema diagram templates | ChartDB"
+                    content="Database schema diagram templates | DesignDB"
                 />
             )}
 
@@ -132,10 +135,13 @@ export const TemplatesPageHelmet: React.FC<TemplatesPageHelmetProps> = ({
                 />
             )}
 
-            <meta name="twitter:image" content={`${HOST_URL}/chartdb.png`} />
+            <meta
+                name="twitter:image"
+                content={`${HOST_URL}/designdb-logo.png`}
+            />
             <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:site" content="@ChartDB_io" />
-            <meta name="twitter:creator" content="@ChartDB_io" />
+            <meta name="twitter:site" content="@DesignDB_io" />
+            <meta name="twitter:creator" content="@DesignDB_io" />
         </Helmet>
     );
 };

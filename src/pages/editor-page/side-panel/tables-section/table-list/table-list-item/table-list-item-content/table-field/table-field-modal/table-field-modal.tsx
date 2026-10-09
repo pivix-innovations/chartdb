@@ -23,6 +23,7 @@ import { Textarea } from '@/components/textarea/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
 import equal from 'fast-deep-equal';
 import type { DatabaseType, DBTable } from '@/lib/domain';
+import { DatabaseType as DatabaseTypeEnum } from '@/lib/domain/database-type';
 
 import {
     Select,
@@ -31,7 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/select/select';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { useDesignDB } from '@/hooks/use-chartdb';
 
 export interface TableFieldPopoverProps {
     field: DBField;
@@ -52,7 +53,7 @@ export const TableFieldPopover: React.FC<TableFieldPopoverProps> = ({
     open: controlledOpen,
     onOpenChange: controlledOnOpenChange,
 }) => {
-    const { readonly } = useChartDB();
+    const { readonly } = useDesignDB();
     const { t } = useTranslation();
     const [localField, setLocalField] = React.useState<DBField>(field);
     const [internalOpen, setInternalOpen] = React.useState(false);
@@ -111,6 +112,7 @@ export const TableFieldPopover: React.FC<TableFieldPopoverProps> = ({
                 default: localField.default,
                 increment: localField.increment,
                 isArray: localField.isArray,
+                spatialTypeModifier: localField.spatialTypeModifier,
             });
         }
         prevFieldRef.current = localField;
@@ -161,7 +163,7 @@ export const TableFieldPopover: React.FC<TableFieldPopoverProps> = ({
                     <Ellipsis className="size-3.5" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-52">
+            <PopoverContent className="w-64">
                 <div className="flex flex-col gap-2">
                     <div className="text-sm font-semibold">
                         {t(
@@ -231,6 +233,35 @@ export const TableFieldPopover: React.FC<TableFieldPopoverProps> = ({
                                         }))
                                     }
                                 />
+                            </div>
+                        ) : null}
+                        {databaseType === DatabaseTypeEnum.POSTGRESQL &&
+                        localField.type.id === 'geography' ? (
+                            <div className="flex flex-col gap-2">
+                                <Label
+                                    htmlFor="geography-modifier"
+                                    className="text-subtitle"
+                                >
+                                    Geography type modifier
+                                </Label>
+                                <Input
+                                    id="geography-modifier"
+                                    value={localField.spatialTypeModifier ?? ''}
+                                    onChange={(e) =>
+                                        setLocalField((current) => ({
+                                            ...current,
+                                            spatialTypeModifier:
+                                                e.target.value || null,
+                                        }))
+                                    }
+                                    placeholder="Point, 4326"
+                                    className="w-full rounded-md bg-muted text-sm"
+                                    readOnly={readonly}
+                                />
+                                <span className="text-xs text-muted-foreground">
+                                    Optional shape and SRID, for example Point,
+                                    4326.
+                                </span>
                             </div>
                         ) : null}
                         <div className="flex flex-col gap-2">

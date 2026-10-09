@@ -8,7 +8,7 @@ import type { DatabaseMetadata } from '@/lib/data/import-metadata/metadata-types
 import { loadDatabaseMetadata } from '@/lib/data/import-metadata/metadata-types/database-metadata';
 import type { Diagram } from '@/lib/domain/diagram';
 import { loadFromDatabaseMetadata } from '@/lib/data/import-metadata/import';
-import { useChartDB } from '@/hooks/use-chartdb';
+import { useDesignDB } from '@/hooks/use-chartdb';
 import { useRedoUndoStack } from '@/hooks/use-redo-undo-stack';
 import { useTranslation } from 'react-i18next';
 import type { BaseDialogProps } from '../common/base-dialog-props';
@@ -41,7 +41,7 @@ export const ImportDatabaseDialog: React.FC<ImportDatabaseDialogProps> = ({
         databaseType: currentDatabaseType,
         updateDatabaseType,
         tables: existingTables,
-    } = useChartDB();
+    } = useDesignDB();
     const [scriptResult, setScriptResult] = useState('');
     const { resetRedoStack, resetUndoStack } = useRedoUndoStack();
     const { t } = useTranslation();
