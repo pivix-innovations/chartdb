@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import type { Diagram } from '@/lib/domain/diagram';
+import type { DiagramListItem } from '@/lib/domain/diagram-list-item';
 import { emptyFn } from '@/lib/utils';
 import type { DBRelationship } from '@/lib/domain/db-relationship';
 import type { DBTable } from '@/lib/domain/db-table';
@@ -32,7 +33,7 @@ export interface StorageContext {
         includeAreas?: boolean;
         includeCustomTypes?: boolean;
         includeNotes?: boolean;
-    }) => Promise<Diagram[]>;
+    }) => Promise<DiagramListItem[]>;
     getDiagram: (
         id: string,
         options?: {

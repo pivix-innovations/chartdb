@@ -3,6 +3,7 @@ import type { StorageContext } from './storage-context';
 import { storageContext } from './storage-context';
 import Dexie, { type EntityTable } from 'dexie';
 import type { Diagram } from '@/lib/domain/diagram';
+import type { DiagramListItem } from '@/lib/domain/diagram-list-item';
 import type { DBTable } from '@/lib/domain/db-table';
 import type { DBRelationship } from '@/lib/domain/db-relationship';
 import { determineCardinalities } from '@/lib/domain/db-relationship';
@@ -715,10 +716,10 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 includeCustomTypes: false,
                 includeNotes: false,
             }
-        ): Promise<Diagram[]> => {
-            let diagrams = supabase
-                ? await listCloudDiagrams()
-                : await db.diagrams.toArray();
+        ): Promise<DiagramListItem[]> => {
+            if (supabase) return listCloudDiagrams();
+
+            let diagrams = await db.diagrams.toArray();
 
             if (options.includeTables && !supabase) {
                 diagrams = await Promise.all(
@@ -778,7 +779,16 @@ export const StorageProvider: React.FC<React.PropsWithChildren> = ({
                 );
             }
 
-            return diagrams;
+            return diagrams.map((diagram) => ({
+                id: diagram.id,
+                name: diagram.name,
+                databaseType: diagram.databaseType,
+                databaseEdition: diagram.databaseEdition,
+                createdAt: diagram.createdAt,
+                updatedAt: diagram.updatedAt,
+                isShared: false,
+                isOwner: true,
+            }));
         },
         [
             db,

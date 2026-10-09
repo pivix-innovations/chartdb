@@ -28,8 +28,9 @@ import { DiffProvider } from '@/context/diff-context/diff-provider';
 import { TopNavbarMock } from './top-navbar/top-navbar-mock';
 import { DiagramFilterProvider } from '@/context/diagram-filter-context/diagram-filter-provider';
 import { CloudAuthGate } from './cloud-auth-gate';
-import { saveCloudDiagram } from '@/lib/cloud-diagrams';
+import { getCloudDiagram, saveCloudDiagram } from '@/lib/cloud-diagrams';
 import { useToast } from '@/components/toast/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const OPEN_STAR_US_AFTER_SECONDS = 30;
 const SHOW_STAR_US_AGAIN_AFTER_DAYS = 1;
@@ -43,7 +44,7 @@ export const EditorMobileLayoutLazy = React.lazy(
 );
 
 const EditorPageComponent: React.FC = () => {
-    const { diagramName, currentDiagram } = useDesignDB();
+    const { diagramName, currentDiagram, loadDiagramFromData } = useDesignDB();
     const { openStarUsDialog } = useDialog();
     const { isMd: isDesktop } = useBreakpoint('md');
     const { starUsDialogLastOpen, setStarUsDialogLastOpen, githubRepoOpened } =
@@ -51,6 +52,45 @@ const EditorPageComponent: React.FC = () => {
     const { initialDiagram } = useDiagramLoader();
     const { toast } = useToast();
     const savedSnapshot = useRef('');
+    const currentDiagramRef = useRef(currentDiagram);
+    currentDiagramRef.current = currentDiagram;
+
+    useEffect(() => {
+        if (!supabase || !currentDiagram.id) return;
+        const client = supabase;
+        let active = true;
+        const channel = client
+            .channel(`diagram-updates:${currentDiagram.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'user_diagrams',
+                    filter: `id=eq.${currentDiagram.id}`,
+                },
+                () => {
+                    void getCloudDiagram(currentDiagram.id)
+                        .then((diagram) => {
+                            if (!active || !diagram) return;
+                            const snapshot = JSON.stringify(diagram);
+                            if (
+                                snapshot ===
+                                JSON.stringify(currentDiagramRef.current)
+                            )
+                                return;
+                            savedSnapshot.current = snapshot;
+                            loadDiagramFromData(diagram);
+                        })
+                        .catch(() => undefined);
+                }
+            )
+            .subscribe();
+        return () => {
+            active = false;
+            void client.removeChannel(channel);
+        };
+    }, [currentDiagram.id, loadDiagramFromData]);
 
     useEffect(() => {
         if (!currentDiagram.id) return;

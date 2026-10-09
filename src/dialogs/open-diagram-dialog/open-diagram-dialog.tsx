@@ -21,7 +21,7 @@ import {
 import { useConfig } from '@/hooks/use-config';
 import { useDialog } from '@/hooks/use-dialog';
 import { useStorage } from '@/hooks/use-storage';
-import type { Diagram } from '@/lib/domain/diagram';
+import type { DiagramListItem } from '@/lib/domain/diagram-list-item';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -42,7 +42,7 @@ export const OpenDiagramDialog: React.FC<OpenDiagramDialogProps> = ({
     const { updateConfig } = useConfig();
     const navigate = useNavigate();
     const { listDiagrams } = useStorage();
-    const [diagrams, setDiagrams] = useState<Diagram[]>([]);
+    const [diagrams, setDiagrams] = useState<DiagramListItem[]>([]);
     const [selectedDiagramId, setSelectedDiagramId] = useState<
         string | undefined
     >();
@@ -163,11 +163,6 @@ export const OpenDiagramDialog: React.FC<OpenDiagramDialogProps> = ({
                                             'open_diagram_dialog.table_columns.last_modified'
                                         )}
                                     </TableHead>
-                                    <TableHead className="text-center">
-                                        {t(
-                                            'open_diagram_dialog.table_columns.tables_count'
-                                        )}
-                                    </TableHead>
                                     <TableHead />
                                 </TableRow>
                             </TableHeader>
@@ -214,15 +209,23 @@ export const OpenDiagramDialog: React.FC<OpenDiagramDialogProps> = ({
                                                 />
                                             </div>
                                         </TableCell>
-                                        <TableCell>{diagram.name}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <span>{diagram.name}</span>
+                                                {diagram.isShared && (
+                                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                                                        {diagram.isOwner
+                                                            ? 'Link shared'
+                                                            : 'Shared with you'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell className="hidden items-center sm:table-cell">
                                             {diagram.createdAt.toLocaleString()}
                                         </TableCell>
                                         <TableCell>
                                             {diagram.updatedAt.toLocaleString()}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            {diagram.tables?.length}
                                         </TableCell>
                                         <TableCell className="items-center p-0 pr-1 text-right">
                                             <DiagramRowActionsMenu

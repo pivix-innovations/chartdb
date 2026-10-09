@@ -9,13 +9,13 @@ import {
 import { Button } from '@/components/button/button';
 import { Ellipsis, Layers2, SquareArrowOutUpRight, Trash2 } from 'lucide-react';
 import { useDesignDB } from '@/hooks/use-chartdb';
-import type { Diagram } from '@/lib/domain';
+import type { DiagramListItem } from '@/lib/domain/diagram-list-item';
 import { useStorage } from '@/hooks/use-storage';
 import { cloneDiagram } from '@/lib/clone';
 import { useTranslation } from 'react-i18next';
 
 interface DiagramRowActionsMenuProps {
-    diagram: Diagram;
+    diagram: DiagramListItem;
     onOpen: () => void;
     refetch: () => void;
     numberOfDiagrams: number;
@@ -28,20 +28,37 @@ export const DiagramRowActionsMenu: React.FC<DiagramRowActionsMenuProps> = ({
     numberOfDiagrams,
 }) => {
     const { diagramId } = useDesignDB();
-    const { deleteDiagram, addDiagram } = useStorage();
+    const { deleteDiagram, addDiagram, getDiagram } = useStorage();
     const { t } = useTranslation();
 
     const onDelete = useCallback(async () => {
-        deleteDiagram(diagram.id);
+        if (!diagram.isOwner) return;
+        void deleteDiagram(diagram.id);
         refetch();
 
         if (diagram.id === diagramId || numberOfDiagrams <= 1) {
             window.location.href = '/';
         }
-    }, [deleteDiagram, diagram.id, diagramId, refetch, numberOfDiagrams]);
+    }, [
+        deleteDiagram,
+        diagram.id,
+        diagram.isOwner,
+        diagramId,
+        refetch,
+        numberOfDiagrams,
+    ]);
 
     const onDuplicate = useCallback(async () => {
-        const duplicatedDiagram = cloneDiagram(diagram);
+        const fullDiagram = await getDiagram(diagram.id, {
+            includeTables: true,
+            includeRelationships: true,
+            includeDependencies: true,
+            includeAreas: true,
+            includeCustomTypes: true,
+            includeNotes: true,
+        });
+        if (!fullDiagram) return;
+        const duplicatedDiagram = cloneDiagram(fullDiagram);
 
         const diagramToAdd = duplicatedDiagram.diagram;
 
@@ -51,9 +68,9 @@ export const DiagramRowActionsMenu: React.FC<DiagramRowActionsMenuProps> = ({
 
         diagramToAdd.name = `${diagram.name} (Copy)`;
 
-        addDiagram({ diagram: diagramToAdd });
+        await addDiagram({ diagram: diagramToAdd });
         refetch();
-    }, [addDiagram, refetch, diagram]);
+    }, [addDiagram, getDiagram, refetch, diagram]);
 
     return (
         <DropdownMenu>
@@ -84,14 +101,18 @@ export const DiagramRowActionsMenu: React.FC<DiagramRowActionsMenuProps> = ({
                     <Layers2 className="size-3.5" />
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                    onClick={onDelete}
-                    className="flex justify-between gap-4 text-red-700"
-                >
-                    {t('open_diagram_dialog.diagram_actions.delete')}
-                    <Trash2 className="size-3.5 text-red-700" />
-                </DropdownMenuItem>
+                {diagram.isOwner && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onClick={onDelete}
+                            className="flex justify-between gap-4 text-red-700"
+                        >
+                            {t('open_diagram_dialog.diagram_actions.delete')}
+                            <Trash2 className="size-3.5 text-red-700" />
+                        </DropdownMenuItem>
+                    </>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );

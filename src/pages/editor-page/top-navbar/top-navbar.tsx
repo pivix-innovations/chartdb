@@ -7,6 +7,7 @@ import { Menu } from './menu/menu';
 import { useAuth } from '@/context/auth-context/use-auth';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/button/button';
+import { ShareDiagramButton } from './share-diagram-button';
 
 export interface TopNavbarProps {}
 
@@ -43,6 +44,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = () => {
             <DiagramName />
             <div className="hidden flex-1 items-center justify-end gap-2 sm:flex">
                 <LastSaved />
+                <ShareDiagramButton />
                 <Button
                     variant="ghost"
                     size="sm"

@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-To build the app, run `npm run build`. Cloud diagram saving requires a Supabase project configured with the schema in `supabase/schema.sql` and the `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` environment variables.
+To build the app, run `npm run build`. Cloud diagram saving and collaboration require a Supabase project configured with `supabase/schema.sql` and the `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` environment variables. Apply the schema in the Supabase SQL Editor; it adds link sharing access and enables Realtime updates for diagrams. Shared links require collaborators to sign in.
 
 ## License and source
 
